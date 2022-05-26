@@ -1,26 +1,50 @@
-﻿using System;
+﻿
+
+
+using System;
 using NetMQ;
 using NetMQ.Sockets;
+using System.Text.Json;
 
-static class Program
+
+namespace ConsoleApp1
 {
-    public static void Main()
+    static class Program
     {
-        Console.WriteLine("Connecting to hello world server…");
-        using (var requester = new RequestSocket())
+        public static void Main()
         {
-            requester.Connect("tcp://localhost:5555");
-
-            int requestNumber;
-            for (requestNumber = 0; requestNumber != 10; requestNumber++)
+            Console.WriteLine("Connecting to hello world server…");
+            using (var requester = new RequestSocket())
             {
-                Console.WriteLine("Sending Hello {0}...", requestNumber);
-                requester.SendFrame("Hello");
-                string str = requester.ReceiveFrameString();
-                Console.WriteLine("Received World {0}", requestNumber);
+                requester.Connect("tcp://localhost:5555");
+
+                int requestNumber;
+                for (requestNumber = 0; requestNumber != 10; requestNumber++)
+                {
+                    Console.WriteLine("Sending Hello {0}...", requestNumber);
+
+                    int src1 = 2;
+                    int src2 = 5;
+
+                    string message = "{" + "\"instrument\"  :\"rto\", " +
+                                                "\"meas\"   :\"phase\", " +
+                                               $"\"src1\"        :\"{src1}\", " +
+                                               $"\"src2\"        :\"{src2}\" " + "}";
+
+
+                    requester.SendFrame(message);
+                    string response = requester.ReceiveFrameString();
+                    Console.WriteLine($"Received message {response}");
+
+                    MeasData? restoredData = JsonSerializer.Deserialize<MeasData>(response);
+                    Console.WriteLine(restoredData);
+                }
             }
         }
     }
 }
+
+
+
 
 

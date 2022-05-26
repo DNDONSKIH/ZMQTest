@@ -1,6 +1,6 @@
-
 import time
 import zmq
+import json
 
 if __name__ == '__main__':
     context = zmq.Context()
@@ -9,6 +9,15 @@ if __name__ == '__main__':
 
     while True:
         message = socket.recv()
-        print("Received request: %s" % message)
+
+        msg_string = message.decode('utf8')
+        json_msg = json.loads(msg_string)
+
+        print(f"Received request: {json_msg}")
         time.sleep(1)
-        socket.send(b"World")
+
+        json_msg["result"] = 10.0
+        response = json.dumps(json_msg, indent=4)
+        encoded_msg = response.encode()
+
+        socket.send(encoded_msg)
